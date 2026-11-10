@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+}
+
+.home {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.home h1 {
+  text-align: center;
+  color: #333;
+}
+
+
+.expense-item {
+  background-color: white;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.expense-item p {
+  margin: 8px 0;
+}

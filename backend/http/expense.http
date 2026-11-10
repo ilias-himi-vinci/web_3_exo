@@ -1,0 +1,31 @@
+GET http://localhost:3000/ping
+
+###
+GET http://localhost:3000/api/expenses
+
+###
+POST http://localhost:3000/api/expenses
+Content-Type: application/json
+
+{
+  "id": "999",
+  "date": "2026-11-09",
+  "description": "Test expense",
+  "payer": "Alice",
+  "amount": 10
+}
+
+###
+POST http://localhost:3000/api/expenses
+Content-Type: application/json
+
+{
+  "id": "101",
+  "date": "2026-11-09",
+  "description": "Pizza",
+  "payer": "Alice",
+  "amount": 15
+}
+
+###
+POST http://localhost:3000/api/expenses/reset
