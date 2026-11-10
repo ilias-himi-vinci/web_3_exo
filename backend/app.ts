@@ -4,6 +4,7 @@ import logger from 'morgan';
 import expensesRouter from './routes/expenses.ts';
 
 const app = express();
+const port = process.env.PORT || 3000;
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -12,7 +13,6 @@ app.use(
     origin: ['http://localhost:5173', /\.onrender\.com$/],
   })
 );
-app.use(express.json());
 
 app.get('/ping', (req, res) => {
   res.sendStatus(204);
@@ -20,8 +20,9 @@ app.get('/ping', (req, res) => {
 
 app.use('/api', expensesRouter);
 
-app.listen(3000, () => {
-  console.log('Server listening on http://localhost:3000');
+
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
 
 
