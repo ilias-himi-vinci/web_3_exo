@@ -4,18 +4,20 @@ import { db } from '../src/prisma/db.ts';
 
 const initialExpensesFile = new URL('../data/expenses.init.json', import.meta.url);
 
-type NewExpense = Omit<Expense, 'id' | 'date'>;
+type NewExpense = Omit<Expense, 'id' | 'date'> & { date?: string };
 
 export async function getAllExpenses(): Promise<Expense[]> {
   const expenses = await db.orm.public.Expense.all();
   return expenses as Expense[];
 }
 
+
 export async function addExpense(expense: NewExpense): Promise<Expense> {
   const created = await db.orm.public.Expense.create({
     description: expense.description,
     payer: expense.payer,
     amount: expense.amount,
+    ...(expense.date ? { date: new Date(expense.date).toISOString() } : {}),
   });
   return created as Expense;
 }

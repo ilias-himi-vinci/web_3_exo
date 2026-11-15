@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Expense } from '../types/Expense';
+import type { Expense, NewExpense } from '../types/Expense';
 
 const host = import.meta.env.VITE_API_URL || 'http://unknown-api-url.com';
 
@@ -40,7 +40,7 @@ function useExpenses() {
     fetchExpenses()
   }, [fetchExpenses]);
 
-  async function addExpense(expense: Expense): Promise<void> {
+  async function addExpense(expense: NewExpense): Promise<void> {
     try {
       setError(null);
       setLoading(true);
