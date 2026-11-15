@@ -8,9 +8,9 @@ import {
 const router = Router();
 
 // GET : récupérer toutes les dépenses
-router.get('/expenses', (req, res) => {
+router.get('/expenses', async (req, res) => {
   try {
-    const expenses = getAllExpenses();
+    const expenses = await getAllExpenses();
     res.status(200).json(expenses);
   } catch (error: unknown) {
     console.error(error);
@@ -21,10 +21,10 @@ router.get('/expenses', (req, res) => {
 });
 
 // POST : ajouter une dépense
-router.post('/expenses', (req, res) => {
+router.post('/expenses', async (req, res) => {
   try {
     const expense = req.body;
-    const newExpense = addExpense(expense);
+    const newExpense = await addExpense(expense);
     res.status(201).json(newExpense);
   } catch (error: unknown) {
     console.error(error);
@@ -35,17 +35,15 @@ router.post('/expenses', (req, res) => {
 });
 
 // POST : réinitialiser les dépenses
-router.post('/expenses/reset', (req, res) => {
+router.post('/expenses/reset', async (req, res) => {
   try {
-    const expenses = resetExpenses();
-
+    const expenses = await resetExpenses();
     res.status(200).json({
       message: 'Dépenses réinitialisées avec succès',
       expenses: expenses,
     });
   } catch (error: unknown) {
     console.error(error);
-
     res.status(500).json({
       message: 'Erreur lors de la réinitialisation des dépenses',
     });
