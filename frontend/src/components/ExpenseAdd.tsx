@@ -1,5 +1,23 @@
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import type { NewExpense } from '../types/Expense';
+
+const expenseSchema = z.object({
+  payer: z.enum(['Alice', 'Bob'], {
+    error: 'Le payeur doit être Alice ou Bob',
+  }),
+  date: z.string().min(1, 'La date est obligatoire'),
+  description: z
+    .string()
+    .max(200, 'La description ne peut pas dépasser 200 caractères')
+    .optional(),
+  amount: z
+    .number({ error: 'Le montant doit être un nombre' })
+    .positive('Le montant doit être strictement positif'),
+});
+
+type ExpenseFormData = z.infer<typeof expenseSchema>;
 
 interface ExpenseAddProps {
   addExpense: (expense: NewExpense) => Promise<void>;
@@ -11,13 +29,21 @@ function ExpenseAdd({ addExpense }: ExpenseAddProps) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<NewExpense>({
+  } = useForm<ExpenseFormData>({
+    resolver: zodResolver(expenseSchema),
     defaultValues: { payer: 'Alice' },
   });
 
-  async function onSubmit(data: NewExpense) {
+  async function onSubmit(data: ExpenseFormData) {
+    const newExpense: NewExpense = {
+      payer: data.payer,
+      date: data.date,
+      description: data.description ?? '',
+      amount: data.amount,
+    };
+
     try {
-      await addExpense(data);
+      await addExpense(newExpense);
       reset();
     } catch {
       // l'erreur est déjà affichée par le hook useExpenses
@@ -25,24 +51,26 @@ function ExpenseAdd({ addExpense }: ExpenseAddProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <label>
         Payé par :
-        <select {...register('payer', { required: true })}>
+        <select {...register('payer')}>
           <option value="Alice">Alice</option>
           <option value="Bob">Bob</option>
         </select>
+        {errors.payer && <span>{errors.payer.message}</span>}
       </label>
 
       <label>
         Date :
-        <input type="date" {...register('date', { required: true })} />
-        {errors.date && <span>La date est obligatoire</span>}
+        <input type="date" {...register('date')} />
+        {errors.date && <span>{errors.date.message}</span>}
       </label>
 
       <label>
         Description :
         <input type="text" {...register('description')} />
+        {errors.description && <span>{errors.description.message}</span>}
       </label>
 
       <label>
@@ -51,9 +79,9 @@ function ExpenseAdd({ addExpense }: ExpenseAddProps) {
           type="number"
           step="0.01"
           placeholder="Entrez le montant"
-          {...register('amount', { required: true, valueAsNumber: true })}
+          {...register('amount', { valueAsNumber: true })}
         />
-        {errors.amount && <span>Le montant est obligatoire</span>}
+        {errors.amount && <span>{errors.amount.message}</span>}
       </label>
 
       <button type="submit">Ajouter</button>
