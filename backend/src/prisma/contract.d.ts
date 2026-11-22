@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b31c0cdda34f8a3007f23ad411cab149d371c3b906002268192171b765904468'>;
+  StorageHashBase<'f7bc332b4dfd4d6c5e76a05e5fa2f48528552f590b9709d2a34dbe17963f68f8'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -308,15 +308,24 @@ export type StorageColumnInputTypes = ColumnTypesFromStorage<
 >;
 
 export namespace Models {
+  export type public_Category = {
+    color: FieldOutputTypes['public']['Category']['color'];
+    id: FieldOutputTypes['public']['Category']['id'];
+    name: FieldOutputTypes['public']['Category']['name'];
+    expenses: public_Expense[];
+    readonly [RelationKeys]?: 'expenses';
+  };
   export type public_Expense = {
     amount: FieldOutputTypes['public']['Expense']['amount'];
+    categoryId: FieldOutputTypes['public']['Expense']['categoryId'];
     date: FieldOutputTypes['public']['Expense']['date'];
     description: FieldOutputTypes['public']['Expense']['description'];
     id: FieldOutputTypes['public']['Expense']['id'];
     payerId: FieldOutputTypes['public']['Expense']['payerId'];
+    category: public_Category | null;
     participants: public_User[];
     payer: public_User;
-    readonly [RelationKeys]?: 'participants' | 'payer';
+    readonly [RelationKeys]?: 'category' | 'participants' | 'payer';
   };
   export type public_Participations = {
     expenseId: FieldOutputTypes['public']['Participations']['expenseId'];
@@ -351,6 +360,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    Category: Models.public_Category;
     Expense: Models.public_Expense;
     Participations: Models.public_Participations;
     Transfer: Models.public_Transfer;
@@ -376,12 +386,48 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly Category: {
+              columns: {
+                readonly color: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly name: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['name'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly Expense: {
               columns: {
                 readonly amount: {
                   readonly dataType: 'pg/float8';
                   readonly codecId: 'pg/float8@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly categoryId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly date: {
@@ -418,6 +464,12 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [
                 {
+                  readonly name: 'Expense_categoryId_idx_15c304f2';
+                  readonly prefix: 'Expense_categoryId_idx';
+                  readonly columns: readonly ['categoryId'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'Expense_payerId_idx_3d3ae95d';
                   readonly prefix: 'Expense_payerId_idx';
                   readonly columns: readonly ['payerId'];
@@ -434,6 +486,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Expense';
+                    readonly columns: readonly ['categoryId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Category';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -625,6 +689,7 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly Category: { readonly namespace: 'public' & NamespaceId; readonly model: 'Category' };
     readonly Expense: { readonly namespace: 'public' & NamespaceId; readonly model: 'Expense' };
     readonly Participations: {
       readonly namespace: 'public' & NamespaceId;
@@ -637,11 +702,53 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly Category: {
+            readonly fields: {
+              readonly color: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly expenses: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Expense';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['categoryId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'Category';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly color: { readonly column: 'color' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+              };
+            };
+          };
           readonly Expense: {
             readonly fields: {
               readonly amount: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly categoryId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly date: {
                 readonly nullable: false;
@@ -664,6 +771,18 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly category: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Category';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['categoryId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly participants: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:M';
@@ -694,6 +813,7 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly amount: { readonly column: 'amount' };
+                readonly categoryId: { readonly column: 'categoryId' };
                 readonly date: { readonly column: 'date' };
                 readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };

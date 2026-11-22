@@ -4,7 +4,7 @@ import type { Expense, NewExpense } from '../types/Expense';
 
 const host = import.meta.env.VITE_API_URL || 'http://unknown-api-url.com';
 
-function useExpenses() {
+function useExpenses(query: string = '') {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ function useExpenses() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${host}/api/expenses`);
+      const response = await fetch(`${host}/api/expenses${query ? `?${query}` : ''}`);
 
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération des dépenses');
@@ -34,10 +34,10 @@ function useExpenses() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [query]);
 
   useEffect(() => {
-    fetchExpenses()
+    fetchExpenses().catch(() => {});
   }, [fetchExpenses]);
 
   async function addExpense(expense: NewExpense): Promise<void> {

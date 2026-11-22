@@ -1,22 +1,20 @@
 import { Router } from 'express';
-import {
-  getAllExpenses,
-  addExpense,
-  resetExpenses,
-} from '../services/expenses.ts';
+import { getExpenses, addExpense, resetExpenses } from '../services/expenses.ts';
+import { parseExpenseFilter } from '../types/Expense.ts';
 
 const router = Router();
 
 // GET : récupérer toutes les dépenses
 router.get('/expenses', async (req, res) => {
+  const filter = parseExpenseFilter(req.query);
+  if (!filter) {
+    return res.status(400).json({ message: 'Paramètres de recherche invalides' });
+  }
   try {
-    const expenses = await getAllExpenses();
-    res.status(200).json(expenses);
+    res.status(200).json(await getExpenses(filter));
   } catch (error: unknown) {
     console.error(error);
-    res.status(500).json({
-      message: 'Erreur lors de la récupération des dépenses',
-    });
+    res.status(500).json({ message: 'Erreur lors de la récupération des dépenses' });
   }
 });
 
